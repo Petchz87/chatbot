@@ -1,0 +1,13 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+fastapi
+uvicorn[standard]
+langchain>=0.3.0
+langchain-ollama
+langchain-postgres
+langchain-huggingface
+sentence-transformers>=3.0.0
+torch
+psycopg[binary]
+psycopg2-binary
+requests
+python-dotenv

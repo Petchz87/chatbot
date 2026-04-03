@@ -1,0 +1,21 @@
+# Environments and Secrets
+.env
+config.env
+
+# Python Cache and Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.model_cache/
+
+# Editor and OS Settings
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# HuggingFace & AI Model Caches
+.cache/

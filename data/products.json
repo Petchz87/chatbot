@@ -1,0 +1,90 @@
+[
+  {
+    "id": "SHIRT-001",
+    "name": "เสื้อยืด Oversize Street Flow",
+    "category": "เสื้อ",
+    "price": 450,
+    "stock": 100,
+    "sizes": ["S", "M", "L", "XL"],
+    "colors": ["ดำ", "ขาว"],
+    "description": "เสื้อยืดทรง Oversize สไตล์สตรีท ผ้า Cotton 100% เกรดพรีเมียม ระบายอากาศดีมาก สกรีนลายกราฟิกเท่ๆ ด้านหลัง เหมาะสำหรับใส่เที่ยวคาเฟ่หรือเดินห้าง มีสีดำและสีขาว",
+    "image_url": "https://example.com/img/shirt-oversize.jpg"
+  },
+  {
+    "id": "SHIRT-002",
+    "name": "เสื้อเชิ้ต Oxford Minimal",
+    "category": "เสื้อ",
+    "price": 890,
+    "stock": 50,
+    "sizes": ["S", "M", "L", "XL"],
+    "colors": ["ฟ้าอ่อน", "ชมพูอ่อน", "ครีม"],
+    "description": "เสื้อเชิ้ตผ้า Oxford ทรง Slim Fit สีพาสเทล รีดง่าย ยับยาก ใส่ทำงานก็ดูดี ใส่ไปเที่ยวก็ดูสมาร์ท เหมาะกับลุค Casual Friday หรือออกเดท",
+    "image_url": "https://example.com/img/shirt-oxford.jpg"
+  },
+  {
+    "id": "PANT-001",
+    "name": "กางเกง Cargo Multi-Pocket",
+    "category": "กางเกง",
+    "price": 1290,
+    "stock": 30,
+    "sizes": ["M", "L", "XL"],
+    "colors": ["เขียวทหาร", "ดำ", "กากี"],
+    "description": "กางเกงคาร์โก้ทรงกระบอกใหญ่ กระเป๋าข้างเยอะจุใจ สไตล์ Y2K ผ้าหนาทนทานแต่ใส่สบาย เอวสม็อคปรับระดับได้ แมทช์กับเสื้อยืดเท่ๆ ได้เลย",
+    "image_url": "https://example.com/img/pant-cargo.jpg"
+  },
+  {
+    "id": "PANT-002",
+    "name": "กางเกงยีนส์ Vintage Blue",
+    "category": "กางเกง",
+    "price": 1590,
+    "stock": 40,
+    "sizes": ["28", "30", "32", "34", "36"],
+    "colors": ["ฟ้าเดนิมวินเทจ"],
+    "description": "กางเกงยีนส์ฟอกสีซีด ทรงกระบอกเล็ก (Slim Straight) ผ้ายืดผสม Spandex เล็กน้อยทำให้ลุกนั่งสบาย ไม่อึดอัด สีเฟดสวยเหมือนใส่มานาน",
+    "image_url": "https://example.com/img/pant-jeans.jpg"
+  },
+  {
+    "id": "SHOE-001",
+    "name": "รองเท้าผ้าใบ Cloud Walker",
+    "category": "รองเท้า",
+    "price": 2500,
+    "stock": 20,
+    "sizes": [20, 21, 22, 23, 24, 25],
+    "colors": ["ขาว"],
+    "description": "รองเท้าสนีกเกอร์ทรง Chunky พื้นหนาพิเศษช่วยเพิ่มความสูง 5 ซม. พื้นนุ่มเหมือนเหยียบเมฆ ดีไซน์สีขาวล้วน (Triple White) แมทช์เข้ากับทุกชุด",
+    "image_url": "https://example.com/img/shoe-sneaker.jpg"
+  },
+  {
+    "id": "SHOE-002",
+    "name": "รองเท้าหนัง Loafer Classic",
+    "category": "รองเท้า",
+    "price": 1890,
+    "stock": 15,
+    "sizes": [39, 40, 41, 42, 43],
+    "colors": ["ดำ", "น้ำตาลเข้ม"],
+    "description": "รองเท้าหนังทรง Loafer แบบสวม สไตล์เกาหลี หนังเงาสวย พื้นยางกันลื่น เหมาะสำหรับใส่คู่กับกางเกงสแล็คหรือยีนส์พับขา เพิ่มลุคให้ดูแพง",
+    "image_url": "https://example.com/img/shoe-loafer.jpg"
+  },
+  {
+    "id": "ACC-001",
+    "name": "เข็มขัดหนังแท้ Genuine Look",
+    "category": "เครื่องประดับ",
+    "price": 690,
+    "stock": 60,
+    "sizes": ["110 ซม.", "120 ซม."],
+    "colors": ["น้ำตาลไหม้"],
+    "description": "เข็มขัดหนังวัวแท้ สีน้ำตาลไหม้ หัวเข็มขัดโลหะสีเงินด้าน ทนทาน ไม่ลอกง่าย สายยาว 120 ซม. ตัดสายได้ เหมาะกับใส่ทำงานหรือใส่กับยีนส์",
+    "image_url": "https://example.com/img/belt-leather.jpg"
+  },
+  {
+    "id": "ACC-002",
+    "name": "หมวกแก๊ป New York Style",
+    "category": "เครื่องประดับ",
+    "price": 350,
+    "stock": 80,
+    "sizes": ["Free Size"],
+    "colors": ["ดำ", "กรม", "เบจ"],
+    "description": "หมวกแก๊ปผ้า Canvas ปักลายตัวอักษร NY ปีกหมวกโค้งรับใบหน้า ปรับขนาดด้านหลังได้ กันแดดดี ใส่แล้วหน้าเรียว มีสีดำ กรม และเบจ",
+    "image_url": "https://example.com/img/hat-ny.jpg"
+  }
+]
