@@ -14,22 +14,16 @@ from services import admin_notify_service
 
 router = APIRouter()
 
-# -----------------------------
-# Debounce settings
-# -----------------------------
 BUFFER_SECONDS = 10
 MAX_BUFFER_WAIT = 30
-POLL_INTERVAL = 0.25  # keep small; this only controls how often we re-check timers
 
-# -----------------------------
-# Per-user state
-# -----------------------------
 pending_buffers: dict[str, list[str]] = {}
 ready_batches: dict[str, deque] = {}
 first_message_ts: dict[str, float] = {}
 last_message_ts: dict[str, float] = {}
 
-debounce_tasks: dict[str, asyncio.Task] = {}
+debounce_handles: dict[str, asyncio.TimerHandle] = {}
+max_wait_handles: dict[str, asyncio.TimerHandle] = {}
 processing_tasks: dict[str, asyncio.Task] = {}
 user_locks: dict[str, asyncio.Lock] = {}
 
@@ -42,7 +36,6 @@ def verify_webhook(
 ):
     if mode == "subscribe" and token == config.VERIFY_TOKEN:
         return PlainTextResponse(content=challenge, status_code=200)
-
     raise HTTPException(status_code=403, detail="Verification failed")
 
 
@@ -61,22 +54,27 @@ def get_ready_queue(sender_id: str) -> deque:
 def ensure_processing_worker(sender_id: str):
     task = processing_tasks.get(sender_id)
     if task is None or task.done():
-        processing_tasks[sender_id] = asyncio.create_task(
-            process_ready_batches(sender_id))
+        processing_tasks[sender_id] = asyncio.create_task(process_ready_batches(sender_id))
 
 
 def is_meaningful_message(text: str) -> bool:
-    """
-    Ignore emoji-only / punctuation-only / whitespace-only messages.
-    """
     if not text or not text.strip():
         return False
-
     core = re.sub(r"[^a-zA-Z0-9ก-๙]+", "", text.strip())
     return len(core) > 0
 
 
-def move_pending_to_ready(sender_id: str):
+def cancel_timer(handle: asyncio.TimerHandle | None):
+    if handle and not handle.cancelled():
+        handle.cancel()
+
+
+def clear_sender_timers(sender_id: str):
+    cancel_timer(debounce_handles.pop(sender_id, None))
+    cancel_timer(max_wait_handles.pop(sender_id, None))
+
+
+def flush_sender(sender_id: str):
     texts = pending_buffers.get(sender_id, [])
     if not texts:
         return
@@ -85,48 +83,30 @@ def move_pending_to_ready(sender_id: str):
     pending_buffers[sender_id] = []
     first_message_ts.pop(sender_id, None)
     last_message_ts.pop(sender_id, None)
+    clear_sender_timers(sender_id)
 
     queue = get_ready_queue(sender_id)
-
-    # Merge into last unsent batch if it exists
-    if queue:
-        queue[-1].extend(batch)
-    else:
-        queue.append(batch)
+    queue.append(batch)
 
     ensure_processing_worker(sender_id)
 
 
-async def debounce_until_idle(sender_id: str):
-    """
-    True idle-based debounce.
-    Finalize the batch when:
-    - user has been idle for BUFFER_SECONDS, or
-    - total waiting time exceeds MAX_BUFFER_WAIT
-    """
-    try:
-        while True:
-            texts = pending_buffers.get(sender_id, [])
-            if not texts:
-                return
+def schedule_sender_timers(sender_id: str):
+    loop = asyncio.get_running_loop()
 
-            now = time.monotonic()
-            started_at = first_message_ts.get(sender_id, now)
-            last_at = last_message_ts.get(sender_id, now)
+    cancel_timer(debounce_handles.get(sender_id))
+    debounce_handles[sender_id] = loop.call_later(
+        BUFFER_SECONDS,
+        flush_sender,
+        sender_id,
+    )
 
-            idle_for = now - last_at
-            total_wait = now - started_at
-
-            if idle_for >= BUFFER_SECONDS or total_wait >= MAX_BUFFER_WAIT:
-                move_pending_to_ready(sender_id)
-                return
-
-            await asyncio.sleep(POLL_INTERVAL)
-
-    except asyncio.CancelledError:
-        return
-    except Exception as e:
-        print(f"Error in debounce_until_idle({sender_id}): {e}")
+    if sender_id not in max_wait_handles:
+        max_wait_handles[sender_id] = loop.call_later(
+            MAX_BUFFER_WAIT,
+            flush_sender,
+            sender_id,
+        )
 
 
 async def process_ready_batches(sender_id: str):
@@ -143,23 +123,20 @@ async def process_ready_batches(sender_id: str):
                 if not merged_text:
                     continue
 
-                # Ignore emoji-only / reaction-only turns completely
                 if not is_meaningful_message(merged_text):
                     continue
 
                 print(f"📦 Final merged turn for {sender_id}: {merged_text!r}")
 
                 if escalation_service.should_skip_bot(sender_id):
-                    print(
-                        f"⏸️ Bot skipped for {sender_id} because mode={escalation_service.get_mode(sender_id)}")
+                    print(f"⏸️ Bot skipped for {sender_id} because mode={escalation_service.get_mode(sender_id)}")
                     continue
 
-                # Fast path: explicit admin request only
                 fast_decision = escalation_service.evaluate(
-                sender_id=sender_id,
-                user_text=merged_text,
-                bot_reply="",
-            )
+                    sender_id=sender_id,
+                    user_text=merged_text,
+                    bot_reply="",
+                )
 
                 if escalation_service.is_explicit_handoff_request(merged_text):
                     escalation_service.update_history(
@@ -186,7 +163,6 @@ async def process_ready_batches(sender_id: str):
 
                 response_text = await rag_service.get_rag_response(merged_text, sender_id)
 
-                # Evaluate AFTER model response, but only send one final action
                 decision = escalation_service.evaluate(
                     sender_id=sender_id,
                     user_text=merged_text,
@@ -246,11 +222,7 @@ def enqueue_message(sender_id: str, text: str):
     last_message_ts[sender_id] = now
     pending_buffers[sender_id].append(text)
 
-    old_task = debounce_tasks.get(sender_id)
-    if old_task and not old_task.done():
-        old_task.cancel()
-
-    debounce_tasks[sender_id] = asyncio.create_task(debounce_until_idle(sender_id))
+    schedule_sender_timers(sender_id)
 
 
 @router.post("/webhook")
